@@ -12,6 +12,7 @@ if len(sys.argv) == 2 and sys.argv[1] == '--help':
 	print('The script accepts two values as command line arguments - \n')
 	print('the name of the archive folder and the name of the version file.c\n')
 	print('example : python3.8 auto_zip.py name_folder file_with_version\n')
+	os.exit()
 
 if len(sys.argv) == 3:
 	dir_name = sys.argv[1]
