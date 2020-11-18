@@ -3,6 +3,7 @@ import os
 
 dir_name = 'selenium'
 filename_with_version = 'gradle.properties'
+str_with_version_for_parse = 'pkg.version='
 
 if len(sys.argv) == 2 and sys.argv[1] == '--help':
 	print('Script for archiving a folder indicating the version of the package.\n') 
@@ -12,6 +13,7 @@ if len(sys.argv) == 2 and sys.argv[1] == '--help':
 	print('The script accepts two values as command line arguments - \n')
 	print('the name of the archive folder and the name of the version file.c\n')
 	print('example : python3.8 auto_zip.py name_folder file_with_version\n')
+	os.exit()
 
 if len(sys.argv) == 3:
 	dir_name = sys.argv[1]
@@ -23,15 +25,15 @@ except:
 	print('Cannot open this file, sorry...')
 	os.exit()
 	
-version_list = []
+version_str = ""
 
-while True:
-	letter  = file_with_version.read(1)
-	if letter != '\n' and letter != '\r' and letter != '\0':
-		version_list.append(letter)
-	else:
-		break
+for line in file_with_version:
+	if line.find(str_with_version_for_parse, 0) != -1:
+		version_str = line.replace(str_with_version_for_parse, '')
+
 file_with_version.close()
 
-os.system('zip -r -0' + ' ' + dir_name + ''.join(version_list) + '.zip' + ' ' + dir_name + '/' + '*')
+version_str = version_str.rstrip('\n')
+
+os.system('zip -r -0' + ' ' + dir_name + '_' + version_str + '.zip' + ' ' + dir_name + '/' + '*')
 
