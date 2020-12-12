@@ -6,11 +6,13 @@ from time import sleep
 
 
 def authentication(browser, login='adm', password='adm'):
-    # для использования допустимы вызовы :
-    # authentication(browser) - вход под предустановленным данным login :adm, password:adm
-    # authentication(browser, 'your_login', 'your_password') - вход по констанотным строкам
-    # authentication(browser, login_str, pass_str) - вход с передачей переменных-строк с логином и паролем
-
+    """
+    Функция входа в АРМ
+    :param browser: объект, возвращаемый методом webdriver.Firefox()
+    :param login:  константа-строка ( like 'shift') или переменная-строка, по дефолту - 'adm'
+    :param password: константа-строка ( like 'shift') или переменная-строка, по дефолту - 'adm'
+    :return: void
+    """
     # Ищем поле с логином и вводим логин
     browser.find_element_by_id('outlined-required').send_keys(login)
     # Ищем поле с паролем и вводим пароль
@@ -21,21 +23,43 @@ def authentication(browser, login='adm', password='adm'):
     sleep(3)
 
 
-def choose_the_bank(brows, bank_id):
-    # для использования допустимы вызовы :
-    # choose_the_bank(brows, bank_id) - выбор банка с передачей переменной-строкой bank_id
-    # choose_the_bank(brows, 'B001021') - выбор банка с передачей константы-строки
-
+def choose_the_bank(browser, bank_id):
+    """
+    Функция выбора id банка
+    :param browser: объект, возвращаемый методом webdriver.Firefox()
+    :param bank_id: выбор банка с передачей константы-строки ( like 'B001021') или переменной-строки
+    :return: void
+    """
     # Элемент с id банков
-    input_bank = brows.find_element_by_css_selector('div.MuiAutocomplete-root>div>div>input')
+    input_bank = browser.find_element_by_css_selector('div.MuiAutocomplete-root>div>div>input')
     input_bank.send_keys(bank_id)
     input_bank.send_keys(Keys.DOWN)
     input_bank.send_keys(Keys.ENTER)
     sleep(3)
 
 
+def choose_tab(browser, tab_name_str):
+    """
+    Функция выбора закладки
+    :param browser: объект, возвращаемый методом webdriver.Firefox()
+    :param tab_name_str: строка с именем закладки
+    :return: void
+    """
+    elements_sp = browser.find_elements_by_tag_name('span')
+    for element_sp in elements_sp:
+        if element_sp.text == tab_name_str:
+            element_sp.click()
+            break
+
+
 def choose_dates(browser, date_from, date_to):
-    # Кристина, спасибо большое!!!
+    """
+    Функция выбора временного периода
+    :param browser: объект, возвращаемый методом webdriver.Firefox()
+    :param date_from: выбор начала периода с передачей константы-строки(в формате 'dd.mm.yyyy') или переменной-строки
+    :param date_to: выбор конца периода с передачей константы-строки(в формате 'dd.mm.yyyy') или переменной-строки
+    :return: void
+    """
     text_boxes = browser.find_elements_by_css_selector('input[type="text"]')
     # Удаляем значение поля "Начало периода", выставленное по умолчанию
     text_boxes[1].clear()
@@ -51,16 +75,58 @@ def choose_dates(browser, date_from, date_to):
     text_boxes[2].send_keys(Keys.ENTER)
 
 
-def account_quit(brows):
+def choose_aggregator(browser, aggregators: list, tab_name_str, method):
+    """
+    Функция выбора агрегатора
+    :param browser: объект, возвращаемый методом webdriver.Firefox()
+    :param aggregators: выбор агрегаторов, данные в виде list (список), пример: ['ABS', 'QIWI']
+    :param tab_name_str: выбор закладки с передачей константы-строки ( like 'Операции') или переменной-строки
+    :param method: выбор способа сделать поле "Агреготоры" неактивным
+    (1 - кликнуть в любое место страницы, 2 - нажать клавишу Ecs)
+    :return: void
+    """
+    if tab_name_str == 'История сверок':
+        browser.find_element_by_xpath('//body/div[1]/div/div[2]/main/div/div[1]/div/div/div[2]').click()
+    if tab_name_str == 'Операции':
+        browser.find_element_by_xpath('//body/div[1]/div/div[2]/main/div/div[1]/div[3]').click()
+    if tab_name_str == 'Файлы агрегатора' or tab_name_str == 'Реестры сверки':
+        browser.find_element_by_xpath('//body/div[1]/div/div[2]/main/div/div[1]/div[2]').click()
+    # Выбор агрегатора
+    for aggregator in aggregators:
+        if aggregator == 'QIWI':
+            browser.find_element_by_xpath('//li[1]').click()
+        if aggregator == 'СПБ НСПК':
+            browser.find_element_by_xpath('//li[2]').click()
+        if aggregator == 'ABS':
+            browser.find_element_by_xpath('//li[3]').click()
+        if aggregator == 'НКО':
+            browser.find_element_by_xpath('//li[4]').click()
+        if aggregator == 'CyberPlat':
+            browser.find_element_by_xpath('//li[5]').click()
+        if aggregator == 'ОЧЛ-ОМСК':
+            browser.find_element_by_xpath('//li[6]').click()
+    # Способы сделать поле "Агреготоры" неактивным
+    if method == 1:
+        browser.find_element_by_xpath('//body/div[3]/div[1]').click()
+    elif method == 2:
+        browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)
+    sleep(1)
+
+
+def account_quit(browser):
+    """
+    Выход из АРМ
+    :param browser: объект, возвращаемый методом webdriver.Firefox()
+    """
     # Ищем выход
     t: int = 0
-    buttons = brows.find_elements_by_tag_name('button')
+    buttons = browser.find_elements_by_tag_name('button')
     # Пока не придумал, как найти эту кнопку более красивым способом
     for element in buttons:
         t += True
         if t == 3:
             element.click()
-    elements = brows.find_elements_by_tag_name('li')
+    elements = browser.find_elements_by_tag_name('li')
     for element_li in elements:
         if element_li.text == 'Выход':
             element_li.click()
