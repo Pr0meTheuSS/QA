@@ -3,6 +3,7 @@
 """
 from selenium.webdriver.common.keys import Keys
 from time import sleep
+import datetime
 
 
 def authentication(browser, login='adm', password='adm'):
@@ -95,7 +96,7 @@ def choose_aggregator(browser, aggregators: list, tab_name_str, method):
     for aggregator in aggregators:
         if aggregator == 'QIWI':
             browser.find_element_by_xpath('//li[1]').click()
-        if aggregator == 'СПБ НСПК':
+        if aggregator == 'СБП НСПК':
             browser.find_element_by_xpath('//li[2]').click()
         if aggregator == 'ABS':
             browser.find_element_by_xpath('//li[3]').click()
@@ -111,6 +112,52 @@ def choose_aggregator(browser, aggregators: list, tab_name_str, method):
     elif method == 2:
         browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)
     sleep(1)
+
+
+def choose_product(browser, products: list, tab_name_str):
+    """
+    Функция выбора продукта
+    :param browser: объект, возвращаемый методом webdriver.Firefox()
+    :param products: выбор продуктов, данные в виде list (список), пример: ['ИБ/МБ', 'ОЧЛ_ОМСК']
+    :param tab_name_str: выбор закладки с передачей константы-строки ( like 'Операции') или переменной-строки
+    :return: void
+    """
+    if tab_name_str == 'История сверок':
+        browser.find_element_by_xpath('//body/div[1]/div/div[2]/main/div/div[1]/div/div/div[3]').click()
+    if tab_name_str == 'Операции':
+        browser.find_element_by_xpath('//body/div[1]/div/div[2]/main/div/div[1]/div[4]').click()
+    if tab_name_str == 'Файлы агрегатора' or tab_name_str == 'Реестры сверки':
+        browser.find_element_by_xpath('//body/div[1]/div/div[2]/main/div/div[1]/div[3]').click()
+    # Выбор продукта
+    lis = browser.find_elements_by_tag_name('li')
+    for el_li in lis:
+        if el_li.text in products:
+            el_li.click()
+    # Сделать "Продукт" неактивным
+    browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)
+    sleep(1)
+
+
+def is_in_interval(date_list, left_date: str, right_date: str):
+    """
+    Функция проверки даты на принадлежность интервалу
+    :param date_list: список с проверяемыми датами в формате datetime
+    :param left_date: дата - левая граница (в формате строки)
+    :param right_date:: дата - правая граница (в формате строки)
+    :return: boolean (True or False)
+    """
+    # Получаем лист со значениями dd mm yyyy и привели значения к типу datetime
+    left_lst = left_date.split('.')
+    left = datetime.datetime(int(left_lst[2], 10), int(left_lst[1], 10), int(left_lst[0], 10), 0, 0, 0)
+
+    right_lst = right_date.split('.')
+    right = datetime.datetime(int(right_lst[2], 10), int(right_lst[1], 10), int(right_lst[0], 10), 23, 59, 59)
+
+    # Для каждого значения в списке дат проверяем принадлежность отрезку [left;right]
+    for cur_date in date_list:
+        if not (left <= cur_date <= right):
+            return False
+    return True
 
 
 def account_quit(browser):
@@ -130,6 +177,14 @@ def account_quit(browser):
     for element_li in elements:
         if element_li.text == 'Выход':
             element_li.click()
+
+
+def click_sort(browser, col_name):
+    # Кликаем на спан c именем col_name для сортировки
+    spans = browser.find_elements_by_css_selector('tr>th>span')
+    for el in spans:
+        if el.text == col_name:
+            el.click()
 
 
 def example_tool(example):
